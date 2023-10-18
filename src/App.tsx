@@ -1,33 +1,50 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [headline, setHeadline] = useState<string>('')
+  const [articles, setArticles] = useState<any[]>([]); // TODO: type: Article[
+  const currentTimer = useRef<any>(null);
+
+  useEffect(() => {
+    if (currentTimer.current) clearTimeout(currentTimer.current);
+    if (!headline) return;
+    const timer = setTimeout(() => {
+      axios.get('http://127.0.0.1:8000/search', {
+        params: {
+          q: headline
+        }
+      })
+        .then((res) => {
+          setArticles(res.data);
+        })
+        .catch(err => console.log(err));
+    }, 500);
+  
+    currentTimer.current = timer;
+  
+    return () => clearTimeout(timer);
+  }, [headline]);
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <main>
+        <form action="">
+          <label htmlFor="headline-search">Headline</label>
+          <input type="text" name="headline-search" id="headline-search"
+            value={headline}
+            onChange={e => setHeadline(e.target.value)}
+          />
+        </form>
+        <div className='articles'>
+          {articles.map((article, index) => (
+            <div className='articles' key={index}>
+              <h2>{article.headline}</h2>
+            </div>
+          ))}
+        </div>
+      </main>
     </>
   )
 }
