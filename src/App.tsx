@@ -7,9 +7,13 @@ function App() {
   const [articles, setArticles] = useState<any[]>([]); // TODO: type: Article[
   const currentTimer = useRef<any>(null);
 
+
   useEffect(() => {
     if (currentTimer.current) clearTimeout(currentTimer.current);
-    if (!headline) return;
+    if (!headline) {
+      setArticles([]);
+      return;
+    }
     const timer = setTimeout(() => {
       axios.get('http://127.0.0.1:8000/search', {
         params: {
@@ -28,24 +32,28 @@ function App() {
   }, [headline]);
 
   return (
-    <>
-      <main>
-        <form action="">
-          <label htmlFor="headline-search">Headline</label>
-          <input type="text" name="headline-search" id="headline-search"
-            value={headline}
-            onChange={e => setHeadline(e.target.value)}
-          />
-        </form>
-        <div className='articles'>
-          {articles.map((article, index) => (
-            <div className='articles' key={index}>
-              <h2>{article.headline}</h2>
-            </div>
-          ))}
-        </div>
-      </main>
-    </>
+      <>
+        <main>
+          <div id='search-container'>
+            <form id='search-form' action="">
+              <label htmlFor="headline-search" className='visually-hidden'>Headline</label>
+              <input type="text" name="headline-search" id="headline-search"
+                value={headline}
+                onChange={e => setHeadline(e.target.value)}
+              />
+            </form>
+            {articles.length > 0 && (
+                <div className='headline-hits'>
+                  {articles.map((article, index) => (
+                    <div className='hit' key={index}>
+                      <p>{article.headline}</p>
+                    </div>
+                  ))}
+                </div>
+            )}
+          </div>
+        </main>
+      </>
   )
 }
 
